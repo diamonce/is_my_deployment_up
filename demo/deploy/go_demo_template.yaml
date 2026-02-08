@@ -1,7 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: go-demo-config
+  namespace: default
+data:
+  config.json: |
+    {
+      "servers": [
+        {
+          "serviceId": "dc_depops_sp",
+          "serviceName": "DevOps та Kubernetes 3.0 Status Page",
+          "ipAddress": "34.116.191.131",
+          "port": 80,
+          "protocol": "http"
+        },
+        {
+          "serviceId": "google",
+          "serviceName": "Google",
+          "ipAddress": "google.com",
+          "port": 80,
+          "protocol": "http"
+        },
+        {
+          "serviceId": "olekluk",
+          "serviceName": "OlekLUk",
+          "ipAddress": "34.133.93.117",
+          "port": 80,
+          "protocol": "http"
+        }
+      ]
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  generation: 1
   labels:
     app: go
   name: go-demo
@@ -20,11 +52,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: go
     spec:
-      automountServiceAccountToken: true
+      automountServiceAccountToken: false
       containers:
         - image: europe-central2-docker.pkg.dev/ethereal-runner-417315/dc-docker-repo/demo_app:production
           imagePullPolicy: Always
@@ -32,19 +63,39 @@ spec:
           ports:
             - containerPort: 8088
               protocol: TCP
-          resources: {}
+          env:
+            - name: CONFIG_PATH
+              value: /config/config.json
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8088
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8088
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+      volumes:
+        - name: config-volume
+          configMap:
+            name: go-demo-config
       dnsPolicy: ClusterFirst
-      enableServiceLinks: true
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      shareProcessNamespace: false
       terminationGracePeriodSeconds: 30
-status:
-  availableReplicas: 3
-  observedGeneration: 1
-  readyReplicas: 3
-  replicas: 3
-  updatedReplicas: 3

@@ -1,0 +1,25 @@
+{
+  "servers": [
+    {
+      "serviceId": "dc_depops_sp",
+      "serviceName": "DevOps та Kubernetes 3.0 Status Page",
+      "ipAddress": "34.116.191.131",
+      "port": 80,
+      "protocol": "http"
+    },
+    {
+      "serviceId": "google",
+      "serviceName": "Google",
+      "ipAddress": "google.com",
+      "port": 80,
+      "protocol": "http"
+    },
+    {
+      "serviceId": "olekluk",
+      "serviceName": "OlekLUk",
+      "ipAddress": "34.133.93.117",
+      "port": 80,
+      "protocol": "http"
+    }
+  ]
+}
